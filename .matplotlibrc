@@ -1,0 +1,3 @@
+text.usetex : True
+font.family : serif
+font.serif  : cm
