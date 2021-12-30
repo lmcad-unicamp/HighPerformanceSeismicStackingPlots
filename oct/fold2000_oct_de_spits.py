@@ -50,7 +50,7 @@ class Fold2000OffsetContinuationTrajectoryDifferentialEvolutionSpits(SpitsExecut
                 int_per_second=[2.93605e+10],
                 total_execution_time=[35.9084],
                 instance_cost_per_hour=Instances.G4DN_X_LARGE_32.cost_per_hour,
-                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_32_v20_cuda_fold2000_oct_de_spits
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_32_v20_cuda_fold2000_oct_de_spits'
             ),
             Instances.P2_X_LARGE: ExecutionData(
                 test_id='e81d6e1',

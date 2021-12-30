@@ -307,7 +307,7 @@ class GraphHelpers:
             PlotHelpers.plot_relative_performance(
                 data_to_plot=data_to_plot,
                 filename_to_save=filename_relative_perf,
-                show=True)
+                show=False)
 
     @staticmethod
     def plot_execution_times_greedy_and_de(instances: List[AwsInstance],
