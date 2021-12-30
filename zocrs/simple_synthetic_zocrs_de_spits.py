@@ -1,10 +1,12 @@
 from typing import List, Dict
 
 from helpers.graph_helpers import GraphHelpers
-from model.execution_data import ExecutionData, AwsInstance, Execution, Instances, Implementations, Implementation
+from helpers.persistence_helpers import PersistenceHelpers
+from model.execution_data import ExecutionData, AwsInstance, Instances, Implementations, Implementation, SpitsExecution, \
+    DataPath, ComputeMethods, DataSets, Models
 
 
-class SimpleSyntheticZeroOffsetCommonReflectionSurfaceDifferentialEvolutionSpits(Execution):
+class SimpleSyntheticZeroOffsetCommonReflectionSurfaceDifferentialEvolutionSpits(SpitsExecution):
     EXECUTION_DATA: Dict[Implementation, Dict[AwsInstance, ExecutionData]] = {
         Implementations.SOLUTION_V20: {
             Instances.G4DN_X_LARGE: ExecutionData(
@@ -12,76 +14,88 @@ class SimpleSyntheticZeroOffsetCommonReflectionSurfaceDifferentialEvolutionSpits
                 int_per_second=[5.41E+10],
                 total_execution_time=[935.132],
                 kernel_execution_time=None,
-                instance_cost_per_hour=Instances.G4DN_X_LARGE.cost_per_hour
+                instance_cost_per_hour=Instances.G4DN_X_LARGE.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_1_v20_cuda_simple_synthetic_zocrs_de_spits'
             ),
             Instances.G4DN_X_LARGE_2: ExecutionData(
                 test_id='e81d6e1',
                 int_per_second=[5.42E+10],
                 total_execution_time=[482.354],
                 kernel_execution_time=None,
-                instance_cost_per_hour=Instances.G4DN_X_LARGE_2.cost_per_hour
+                instance_cost_per_hour=Instances.G4DN_X_LARGE_2.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_2_v20_cuda_simple_synthetic_zocrs_de_spits'
             ),
             Instances.G4DN_X_LARGE_4: ExecutionData(
                 test_id='e81d6e1',
                 int_per_second=[5.46E+10],
                 total_execution_time=[258.989],
                 kernel_execution_time=None,
-                instance_cost_per_hour=Instances.G4DN_X_LARGE_4.cost_per_hour
+                instance_cost_per_hour=Instances.G4DN_X_LARGE_4.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_4_v20_cuda_simple_synthetic_zocrs_de_spits'
             ),
             Instances.G4DN_X_LARGE_8: ExecutionData(
                 test_id='e81d6e1',
                 int_per_second=[2.55E+10],
                 total_execution_time=[168.769],
                 kernel_execution_time=None,
-                instance_cost_per_hour=Instances.G4DN_X_LARGE_8.cost_per_hour
+                instance_cost_per_hour=Instances.G4DN_X_LARGE_8.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_8_v20_cuda_simple_synthetic_zocrs_de_spits'
             ),
             Instances.P2_X_LARGE: ExecutionData(
                 test_id='e81d6e1',
                 int_per_second=[5.42E+10],
                 total_execution_time=[932.115],
                 kernel_execution_time=None,
-                instance_cost_per_hour=Instances.P2_X_LARGE.cost_per_hour
+                instance_cost_per_hour=Instances.P2_X_LARGE.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_1_v20_cuda_simple_synthetic_zocrs_de_spits'
             ),
             Instances.P2_X_LARGE_2: ExecutionData(
                 test_id='e81d6e1',
                 int_per_second=[1.75E+10],
                 total_execution_time=[485.868],
                 kernel_execution_time=None,
-                instance_cost_per_hour=Instances.P2_X_LARGE_2.cost_per_hour
+                instance_cost_per_hour=Instances.P2_X_LARGE_2.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_2_v20_cuda_simple_synthetic_zocrs_de_spits'
             ),
             Instances.P2_X_LARGE_4: ExecutionData(
                 test_id='e81d6e1',
                 int_per_second=[1.74E+10],
                 total_execution_time=[271.711],
                 kernel_execution_time=None,
-                instance_cost_per_hour=Instances.P2_X_LARGE_4.cost_per_hour
+                instance_cost_per_hour=Instances.P2_X_LARGE_4.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_4_v20_cuda_simple_synthetic_zocrs_de_spits'
             ),
             Instances.P2_X_LARGE_8: ExecutionData(
                 test_id='e81d6e1',
                 int_per_second=[1.73E+10],
                 total_execution_time=[161.449],
                 kernel_execution_time=None,
-                instance_cost_per_hour=Instances.P2_X_LARGE_8.cost_per_hour
+                instance_cost_per_hour=Instances.P2_X_LARGE_8.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_8_v20_cuda_simple_synthetic_zocrs_de_spits'
             ),
         }
     }
 
     @staticmethod
     def compute_method() -> str:
-        return 'de_spits'
+        return ComputeMethods.DE_SPITS
 
     @staticmethod
     def data_name() -> str:
-        return 'simple_synthetic'
+        return DataSets.SIMPLE_SYNTHETIC
 
     @staticmethod
     def execution(instance: AwsInstance, impl: Implementation) -> ExecutionData:
-        __impl = SimpleSyntheticZeroOffsetCommonReflectionSurfaceDifferentialEvolutionSpits.EXECUTION_DATA[impl]
+        __impl = SimpleSyntheticZeroOffsetCommonReflectionSurfaceDifferentialEvolutionSpits.executions(impl)
         return __impl.get(instance)
 
     @staticmethod
+    def executions(impl: Implementation) -> Dict[AwsInstance, ExecutionData]:
+        return SimpleSyntheticZeroOffsetCommonReflectionSurfaceDifferentialEvolutionSpits.EXECUTION_DATA[impl]
+
+    @staticmethod
     def model() -> str:
-        return 'zocrs'
+        return Models.ZOCRS
 
     @staticmethod
     def plot_cost_and_exec_time():
@@ -108,3 +122,11 @@ class SimpleSyntheticZeroOffsetCommonReflectionSurfaceDifferentialEvolutionSpits
     @staticmethod
     def plot_all():
         SimpleSyntheticZeroOffsetCommonReflectionSurfaceDifferentialEvolutionSpits.plot_cost_and_exec_time()
+
+    @staticmethod
+    def search_for_data_and_persist():
+        PersistenceHelpers.search_for_execution_data(
+            search_folder=DataPath.RAW_DATA_DIR,
+            result_folder=DataPath.GIT_DATA_DIR,
+            exec_class=SimpleSyntheticZeroOffsetCommonReflectionSurfaceDifferentialEvolutionSpits,
+            impl=Implementations.SOLUTION_V20)

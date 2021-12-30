@@ -1,7 +1,7 @@
-from pathlib import Path
 from statistics import mean, stdev
 from typing import Dict, List, Type
 
+from helpers.persistence_helpers import PersistenceHelpers
 from helpers.plot_helpers import PlotHelpers
 from model.execution_data import Execution, AwsInstance, Implementation, Implementations, DummyExecution
 from model.plot_model import LOCALE
@@ -10,8 +10,21 @@ from model.plot_model import LOCALE
 class GraphHelpers:
 
     @staticmethod
-    def create_directory(path_to_dir: str):
-        Path(path_to_dir).mkdir(parents=True, exist_ok=True)
+    def build_int_per_sec(instance: AwsInstance,
+                          implementations: List[Implementation],
+                          exec_type: Type[Execution]) -> Dict[str, List[float]]:
+
+        data_to_plot: Dict[str, List[float]] = {
+            PlotHelpers.INTERPOLATION_PER_SEC_KEY: [],
+            PlotHelpers.INTERPOLATION_PER_SEC_STD_DEV_KEY: []
+        }
+
+        for impl in implementations:
+            __exec = exec_type.execution(instance, impl)
+            data_to_plot[PlotHelpers.INTERPOLATION_PER_SEC_KEY].append(__exec.avg_int_per_second)
+            data_to_plot[PlotHelpers.INTERPOLATION_PER_SEC_STD_DEV_KEY].append(__exec.std_dev_int_per_second)
+
+        return data_to_plot
 
     @staticmethod
     def build_int_per_sec_relative_perf_data(instance: AwsInstance,
@@ -19,40 +32,67 @@ class GraphHelpers:
                                              exec_type: Type[Execution],
                                              reference_int_per_sec: float) -> Dict[str, List[float]]:
 
-        data_to_plot: Dict[str, List[float]] = {
-            PlotHelpers.INTERPOLATION_PER_SEC_KEY: [],
-            PlotHelpers.INTERPOLATION_PER_SEC_STD_DEV_KEY: [],
-            PlotHelpers.RELATIVE_PERF_KEY: []
-        }
+        data_to_plot: Dict[str, List[float]] = GraphHelpers.build_int_per_sec(instance, implementations, exec_type)
+
+        data_to_plot[PlotHelpers.RELATIVE_PERF_KEY] = []
 
         for impl in implementations:
             __exec = exec_type.execution(instance, impl)
-            data_to_plot[PlotHelpers.INTERPOLATION_PER_SEC_KEY].append(__exec.avg_int_per_second)
-            data_to_plot[PlotHelpers.INTERPOLATION_PER_SEC_STD_DEV_KEY].append(__exec.std_dev_int_per_second)
             data_to_plot[PlotHelpers.RELATIVE_PERF_KEY].append(__exec.relative_int_per_second(reference_int_per_sec))
 
         return data_to_plot
 
     @staticmethod
-    def plot_interpolations_per_sec_with_relative_performance(instances: List[AwsInstance],
-                                                              implementations: List[Implementation],
-                                                              exec_type: Type[Execution],
-                                                              reference_impl: Implementation):
+    def plot_interpolations_per_sec_and_impl(instances: List[AwsInstance],
+                                             implementations: List[Implementation],
+                                             exec_type: Type[Execution],
+                                             show: bool = False):
 
         folder = '{}/{}'.format(PlotHelpers.ROOT_IMAGE_DIR, exec_type.model())
 
-        GraphHelpers.create_directory(folder)
+        PersistenceHelpers.create_directory(folder)
 
         for instance in instances:
             prefix = ''.join(['{}_'.format(impl.impl_id) for impl in implementations])
 
-            filename = '{}/{}{}_{}_{}_{}_{}.svg'.format(folder,
-                                                        prefix,
-                                                        exec_type.data_name(),
-                                                        exec_type.model(),
-                                                        exec_type.compute_method(),
-                                                        reference_impl.platform,
-                                                        LOCALE)
+            filename = '{}/int_per_sec_{}{}_{}_{}_{}.svg'.format(folder,
+                                                                 prefix,
+                                                                 exec_type.data_name(),
+                                                                 exec_type.model(),
+                                                                 exec_type.compute_method(),
+                                                                 LOCALE)
+
+            data_to_plot = GraphHelpers.build_int_per_sec(instance=instance,
+                                                          implementations=implementations,
+                                                          exec_type=exec_type)
+
+            PlotHelpers.plot_interpolations_per_sec_and_impl(implementations=implementations,
+                                                             data_to_plot=data_to_plot,
+                                                             filename_to_save=filename,
+                                                             annotate=True,
+                                                             show=show)
+
+    @staticmethod
+    def plot_interpolations_per_sec_with_relative_performance(instances: List[AwsInstance],
+                                                              implementations: List[Implementation],
+                                                              exec_type: Type[Execution],
+                                                              reference_impl: Implementation,
+                                                              show: bool = False):
+
+        folder = '{}/{}'.format(PlotHelpers.ROOT_IMAGE_DIR, exec_type.model())
+
+        PersistenceHelpers.create_directory(folder)
+
+        for instance in instances:
+            prefix = ''.join(['{}_'.format(impl.impl_id) for impl in implementations])
+
+            filename = '{}/int_per_sec_relative_perf_{}{}_{}_{}_{}_{}.svg'.format(folder,
+                                                                                  prefix,
+                                                                                  exec_type.data_name(),
+                                                                                  exec_type.model(),
+                                                                                  exec_type.compute_method(),
+                                                                                  reference_impl.platform,
+                                                                                  LOCALE)
 
             reference_int_per_sec = exec_type.execution(instance, reference_impl).avg_int_per_second
 
@@ -65,7 +105,7 @@ class GraphHelpers:
                                                                               data_to_plot=data_to_plot,
                                                                               filename_to_save=filename,
                                                                               annotate=True,
-                                                                              show=False)
+                                                                              show=show)
 
     @staticmethod
     def plot_v20_gimenes_et_all_int_per_sec_total_exec_time_and_relative_perf(instances: List[AwsInstance],
@@ -75,7 +115,7 @@ class GraphHelpers:
                                                                               reference_impl: Implementation):
         folder = '{}/{}'.format(PlotHelpers.ROOT_IMAGE_DIR, exec_type.model())
 
-        GraphHelpers.create_directory(folder)
+        PersistenceHelpers.create_directory(folder)
 
         filename_total_exec_time_and_relative_perf = '{}/compare_time_{}_{}_{}_{}_{}.svg'.format(
             folder, exec_type.model(), exec_type.data_name(), exec_type.compute_method(),
@@ -126,7 +166,7 @@ class GraphHelpers:
 
         folder = '{}/{}'.format(PlotHelpers.ROOT_IMAGE_DIR, exec_type.model())
 
-        GraphHelpers.create_directory(folder)
+        PersistenceHelpers.create_directory(folder)
 
         filename = '{}/exec_time_{}_{}_{}_{}_{}.svg'.format(
             folder, exec_type.model(), exec_type.data_name(), exec_type.compute_method(),
@@ -150,7 +190,7 @@ class GraphHelpers:
 
         folder = '{}/{}'.format(PlotHelpers.ROOT_IMAGE_DIR, exec_type.model())
 
-        GraphHelpers.create_directory(folder)
+        PersistenceHelpers.create_directory(folder)
 
         filename = '{}/all_{}_{}_{}_{}_{}.svg'.format(
             folder, exec_type.model(), exec_type.data_name(), exec_type.compute_method(),
@@ -179,7 +219,7 @@ class GraphHelpers:
 
         folder = '{}/{}'.format(PlotHelpers.ROOT_IMAGE_DIR, exec_type.model())
 
-        GraphHelpers.create_directory(folder)
+        PersistenceHelpers.create_directory(folder)
 
         suffix = '{}_{}_{}'.format(exec_type.data_name(), exec_type.model(), exec_type.compute_method())
 
@@ -227,7 +267,7 @@ class GraphHelpers:
 
         folder = '{}/{}'.format(PlotHelpers.ROOT_IMAGE_DIR, spits_class.model())
 
-        GraphHelpers.create_directory(folder)
+        PersistenceHelpers.create_directory(folder)
 
         suffix = '{}_{}_{}_{}'.format(
             spits_class.data_name(), spits_class.model(), spits_class.compute_method(), impl.platform)
@@ -240,14 +280,17 @@ class GraphHelpers:
             for instance in instances:
                 execution = spits_class.execution(instance, impl)
 
+                relative_exec_time = execution.avg_relative_total_execution_time(ref_execution_time)
+
                 data_to_plot[instance] = {
                     PlotHelpers.EXEC_TIME_KEY: execution.avg_total_execution_time,
                     PlotHelpers.EXEC_TIME_STD_DEV_KEY: execution.std_dev_total_execution_time,
                     PlotHelpers.COST_KEY: execution.avg_cost,
                     PlotHelpers.COST_STD_DEV_KEY: execution.std_dev_cost,
-                    PlotHelpers.RELATIVE_PERF_KEY: execution.avg_relative_total_execution_time(ref_execution_time),
+                    PlotHelpers.RELATIVE_PERF_KEY: relative_exec_time,
                     PlotHelpers.RELATIVE_PERF_STD_DEV_KEY:
-                        execution.std_dev_relative_total_execution_time(ref_execution_time)
+                        execution.std_dev_relative_total_execution_time(ref_execution_time),
+                    PlotHelpers.EFFICIENCY_PERF_KEY: 100.0 * relative_exec_time / instance.node_count
                 }
 
             if print_data:
@@ -264,7 +307,7 @@ class GraphHelpers:
             PlotHelpers.plot_relative_performance(
                 data_to_plot=data_to_plot,
                 filename_to_save=filename_relative_perf,
-                show=False)
+                show=True)
 
     @staticmethod
     def plot_execution_times_greedy_and_de(instances: List[AwsInstance],
@@ -274,7 +317,7 @@ class GraphHelpers:
 
         folder = '{}/{}'.format(PlotHelpers.ROOT_IMAGE_DIR, de_exec_type.model())
 
-        GraphHelpers.create_directory(folder)
+        PersistenceHelpers.create_directory(folder)
 
         filename = '{}/{}_{}_greedy_de_{}_{}.svg'.format(
             folder, de_exec_type.data_name(), de_exec_type.model(), impl.platform, LOCALE)
@@ -311,7 +354,7 @@ class GraphHelpers:
                                              platform: str):
         folder = '{}/{}'.format(PlotHelpers.ROOT_IMAGE_DIR, 'thread_benchmark')
 
-        GraphHelpers.create_directory(folder)
+        PersistenceHelpers.create_directory(folder)
 
         filename = '{}/{}_{}_{}_{}_{}.svg'.format(
             folder, data_name, model, compute_method, platform, LOCALE)

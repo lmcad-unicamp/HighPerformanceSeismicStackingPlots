@@ -1,14 +1,22 @@
+import distutils.dir_util
+
 from typing import List, Dict
 
 from helpers.graph_helpers import GraphHelpers
-from model.execution_data import Instances, AwsInstance
+from helpers.persistence_helpers import PersistenceHelpers
+from model.execution_data import Instances, AwsInstance, DataPath, Models, DataSets, ComputeMethods
 
 
 class ThreadBenchmark:
 
     THREAD_COUNT: List[str] = ['32', '64', '128', '256', '512', '1024']
 
-    SIMPLE_SYNTHETIC_CMP_GREEDY_EXEC_TIME: Dict[AwsInstance, List[float]] = {
+    EXEC_DATA = 'execution'
+    MODEL = 'model'
+    COMPUTE_METHOD = 'compute_method'
+    DATA_SET = 'data_set'
+
+    SIMPLE_SYNTHETIC_CMP_GREEDY_EXEC_TIME: Dict[AwsInstance, List[List[float]]] = {
         Instances.GTX_TITAN: [
             [16.0941, 17.209, 18.1796, 18.0212],
             [16.6235, 13.9222, 14.2672, 14.1732],
@@ -16,6 +24,12 @@ class ThreadBenchmark:
             [19.9343, 19.1309, 19.3138, 19.3228],
             [20.0997, 18.7159, 19.2312, 19.2212],
             [20.5071, 19.3033, 19.3451, 19.3096]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_32_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_64_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_128_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_256_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_512_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_1024_cmp_simple_synthetic_greedy
         ],
         Instances.G4DN_X_LARGE: [
             [7.23815, 8.97167, 6.61072, 6.65964],
@@ -24,6 +38,12 @@ class ThreadBenchmark:
             [11.2327, 10.6027, 10.6599, 10.6918],
             [11.0262, 10.3279, 10.4626, 10.2628],
             [12.8455, 12.4213, 12.5562]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_32_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_64_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_128_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_256_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_512_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_1024_cmp_simple_synthetic_greedy
         ],
         Instances.P2_X_LARGE: [
             [23.744, 23.812, 23.8982, 21.4328, 21.0844],
@@ -32,6 +52,12 @@ class ThreadBenchmark:
             [32.121, 29.7266, 29.6252, 29.6406, 29.726],
             [31.724, 29.1666, 29.2896, 29.3521, 29.3199],
             [31.8684, 29.6051, 29.5272, 29.6409]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_32_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_64_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_128_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_256_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_512_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_1024_cmp_simple_synthetic_greedy
         ],
         Instances.P3_2X_LARGE: [
             [6.78796, 7.93556, 5.91527, 6.06395, 6.06806, 6.06311],
@@ -40,10 +66,16 @@ class ThreadBenchmark:
             [8.35984, 7.37844, 7.40908, 7.3886, 7.52543, 7.38147],
             [8.09374, 7.36729, 7.33761, 7.29728, 7.32779, 7.22125],
             [8.36102, 7.6699, 7.55315, 7.54598, 7.71295, 7.66589]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_32_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_64_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_128_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_256_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_512_cmp_simple_synthetic_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_1024_cmp_simple_synthetic_greedy
         ],
     }
 
-    SIMPLE_SYNTHETIC_ZO_CRS_DE_EXEC_TIME: Dict[AwsInstance, List[float]] = {
+    SIMPLE_SYNTHETIC_ZO_CRS_DE_EXEC_TIME: Dict[AwsInstance, List[List[float]]] = {
         Instances.GTX_TITAN: [
             [341.715, 323.953, 340.544, 340.26],
             [331.479, 328.047, 330.086, 330.233],
@@ -51,6 +83,12 @@ class ThreadBenchmark:
             [345.527, 342.253, 342.258, 342.396],
             [351.051, 347.53, 350.496, 349.167],
             [357.724, 354.922, 357.327, 357.118]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_32_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_64_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_128_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_256_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_512_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_1024_zocrs_simple_synthetic_de
         ],
         Instances.G4DN_X_LARGE: [
             [81.3376, 75.7886, 80.9322, 81.303],
@@ -58,7 +96,14 @@ class ThreadBenchmark:
             [127.265, 128.441, 128.283, 128.615],
             [112.002, 115.335, 115.414, 116.177],
             [104.488, 108.023, 109.377, 110.803],
-            [132.471, 130.928, 131.198]],
+            [132.471, 130.928, 131.198]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_32_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_64_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_128_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_256_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_512_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_1024_zocrs_simple_synthetic_de
+        ],
         Instances.P2_X_LARGE: [
             [420.241, 414.424, 416.2, 417.424, 417.887],
             [405.961, 396.746, 401.289, 401.541, 402.45],
@@ -66,6 +111,12 @@ class ThreadBenchmark:
             [418.592, 420.254, 424.694, 425.178, 425.07],
             [421.916, 426.532, 429.216, 429.281, 429.497],
             [433.632, 438.396, 438.56, 438.699]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_32_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_64_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_128_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_256_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_512_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_1024_zocrs_simple_synthetic_de
         ],
         Instances.P3_2X_LARGE: [
             [63.6672, 63.1299, 63.1939, 63.3884, 63.2822, 63.2962],
@@ -73,10 +124,17 @@ class ThreadBenchmark:
             [60.1591, 59.2268, 59.158, 59.3696, 59.0944, 59.1863],
             [56.4195, 55.4668, 55.2863, 55.4425, 55.3952, 55.4841],
             [54.4007, 52.7629, 52.9993, 52.7832, 52.9923, 53.0478],
-            [53.0517, 51.8931, 51.6272, 51.7924, 52.0203, 51.6725]],
+            [53.0517, 51.8931, 51.6272, 51.7924, 52.0203, 51.6725]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_32_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_64_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_128_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_256_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_512_zocrs_simple_synthetic_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_1024_zocrs_simple_synthetic_de
+        ],
     }
 
-    FOLD2000_CMP_GREEDY_EXEC_TIME: Dict[AwsInstance, List[float]] = {
+    FOLD2000_CMP_GREEDY_EXEC_TIME: Dict[AwsInstance, List[List[float]]] = {
         Instances.GTX_TITAN: [
             [66.3909, 69.4175, 69.3275],
             [50.4747, 50.9336, 50.8847],
@@ -84,6 +142,12 @@ class ThreadBenchmark:
             [47.5439, 47.7914, 47.7774],
             [48.1104, 48.2258, 48.1717],
             [49.4661, 49.4303, 49.4075]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_32_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_64_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_128_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_256_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_512_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_1024_cmp_fold2000_greedy
         ],
         Instances.G4DN_X_LARGE: [
             [18.7215, 18.5032, 18.6396],
@@ -92,6 +156,12 @@ class ThreadBenchmark:
             [19.3475, 19.7593, 19.7069, 19.2957],
             [19.673, 19.9355, 20.0539, 19.5368],
             [20.0688, 20.4536, 20.5633]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_32_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_64_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_128_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_256_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_512_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_1024_cmp_fold2000_greedy
         ],
         Instances.P2_X_LARGE: [
             [91.7002, 89.1627, 89.1909],
@@ -100,6 +170,12 @@ class ThreadBenchmark:
             [91.3636, 98.6359, 99.132, 99.1338, 99.1457],
             [92.5415, 98.753, 99.2523, 99.2745, 99.2679],
             [94.3557, 102.303, 102.204, 102.282]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_32_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_64_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_128_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_256_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_512_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_1024_cmp_fold2000_greedy
         ],
         Instances.P3_2X_LARGE: [
             [11.969, 10.9988, 10.9329, 10.963, 11.0149],
@@ -108,6 +184,12 @@ class ThreadBenchmark:
             [12.0829, 11.1048, 11.0389, 11.0314, 11.0793, 11.1213],
             [12.1705, 11.1146, 11.0921, 11.1957, 11.2211, 11.2057],
             [12.2674, 11.3637, 11.2761, 11.3012, 11.3632, 11.3408]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_32_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_64_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_128_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_256_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_512_cmp_fold2000_greedy
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_1024_cmp_fold2000_greedy
         ],
     }
 
@@ -119,6 +201,12 @@ class ThreadBenchmark:
             [1132.63, 1144.68, 1145.89, 1146.24],
             [1222.44, 1241.66, 1242.72, 1242.18],
             [1390.95, 1415.17, 1414.54, 1420.51]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_32_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_64_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_128_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_256_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_512_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/GTX_TITAN_thread_benchmark_1024_zocrs_fold2000_de
         ],
         Instances.G4DN_X_LARGE: [
             [338.474, 335.158, 337.557, 337.616],
@@ -127,6 +215,12 @@ class ThreadBenchmark:
             [357.454, 356.019, 357.923, 355.484],
             [361.448, 360.554, 361.896],
             [442.245, 436.933, 439.804]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_32_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_64_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_128_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_256_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_512_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_thread_benchmark_1024_zocrs_fold2000_de
         ],
         Instances.P2_X_LARGE: [
             [1566.81, 1573.95, 1572.78, 1574.89, 1575.45],
@@ -135,6 +229,12 @@ class ThreadBenchmark:
             [1436.84, 1430.53, 1457.22, 1457.42, 1459.83],
             [1533.14, 1559.7, 1560.55, 1561.32],
             [1645.02, 1676.3, 1677.38, 1677.58]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_32_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_64_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_128_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_256_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_512_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_thread_benchmark_1024_zocrs_fold2000_de
         ],
         Instances.P3_2X_LARGE: [
             [152.34, 150.91, 150.912, 150.961, 150.755, 150.937],
@@ -143,43 +243,76 @@ class ThreadBenchmark:
             [169.832, 168.281, 168.196, 167.981, 168.449, 167.928],
             [180.849, 178.912, 179.336, 179.152, 180.109, 179.085],
             [259.863, 258.451, 258.359, 258.186, 258.576]
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_32_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_64_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_128_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_256_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_512_zocrs_fold2000_de
+            # https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P3.2XLARGE_thread_benchmark_1024_zocrs_fold2000_de
         ],
     }
+
+    EXECUTION_METADATA = [
+        {
+            EXEC_DATA: SIMPLE_SYNTHETIC_CMP_GREEDY_EXEC_TIME,
+            MODEL: Models.CMP,
+            DATA_SET: DataSets.SIMPLE_SYNTHETIC,
+            COMPUTE_METHOD: ComputeMethods.GREEDY,
+        },
+        {
+            EXEC_DATA: SIMPLE_SYNTHETIC_ZO_CRS_DE_EXEC_TIME,
+            MODEL: Models.ZOCRS,
+            DATA_SET: DataSets.SIMPLE_SYNTHETIC,
+            COMPUTE_METHOD: ComputeMethods.DE,
+        },
+        {
+            EXEC_DATA: FOLD2000_CMP_GREEDY_EXEC_TIME,
+            MODEL: Models.CMP,
+            DATA_SET: DataSets.FOLD2000,
+            COMPUTE_METHOD: ComputeMethods.GREEDY,
+        },
+        {
+            EXEC_DATA: FOLD2000_ZO_CRS_DE_EXEC_TIME,
+            MODEL: Models.ZOCRS,
+            DATA_SET: DataSets.FOLD2000,
+            COMPUTE_METHOD: ComputeMethods.DE,
+        }
+    ]
 
     @staticmethod
     def plot_thread_benchmark_for_simple_cmp_greedy():
         GraphHelpers.plot_thread_benchmark_with_exec_time(thread_counts=ThreadBenchmark.THREAD_COUNT,
                                                           execution_times=ThreadBenchmark.SIMPLE_SYNTHETIC_CMP_GREEDY_EXEC_TIME,
-                                                          data_name='simple_synthetic',
-                                                          model='cmp',
-                                                          compute_method='greedy',
+                                                          data_name=DataSets.SIMPLE_SYNTHETIC,
+                                                          model=Models.CMP,
+                                                          compute_method=ComputeMethods.GREEDY,
                                                           platform='cuda')
 
     @staticmethod
     def plot_thread_benchmark_for_simple_zocrs_de():
         GraphHelpers.plot_thread_benchmark_with_exec_time(thread_counts=ThreadBenchmark.THREAD_COUNT,
                                                           execution_times=ThreadBenchmark.SIMPLE_SYNTHETIC_ZO_CRS_DE_EXEC_TIME,
-                                                          data_name='simple_synthetic',
-                                                          model='zocrs',
-                                                          compute_method='de',
+                                                          data_name=DataSets.SIMPLE_SYNTHETIC,
+                                                          model=Models.ZOCRS,
+                                                          compute_method=ComputeMethods.DE,
                                                           platform='cuda')
 
     @staticmethod
     def plot_thread_benchmark_for_fold2000_cmp_greedy():
         GraphHelpers.plot_thread_benchmark_with_exec_time(thread_counts=ThreadBenchmark.THREAD_COUNT,
                                                           execution_times=ThreadBenchmark.FOLD2000_CMP_GREEDY_EXEC_TIME,
-                                                          data_name='fold2000',
-                                                          model='cmp',
-                                                          compute_method='greedy',
+                                                          data_name=DataSets.FOLD2000,
+                                                          model=Models.CMP,
+                                                          compute_method=ComputeMethods.GREEDY,
                                                           platform='cuda')
 
     @staticmethod
     def plot_thread_benchmark_for_fold2000_zocrs_de():
         GraphHelpers.plot_thread_benchmark_with_exec_time(thread_counts=ThreadBenchmark.THREAD_COUNT,
                                                           execution_times=ThreadBenchmark.FOLD2000_ZO_CRS_DE_EXEC_TIME,
-                                                          data_name='fold2000',
-                                                          model='zocrs',
-                                                          compute_method='de',
+                                                          data_name=DataSets.FOLD2000,
+                                                          model=Models.ZOCRS,
+                                                          compute_method=ComputeMethods.DE,
                                                           platform='cuda')
 
     @staticmethod
@@ -188,3 +321,55 @@ class ThreadBenchmark:
         ThreadBenchmark.plot_thread_benchmark_for_simple_zocrs_de()
         ThreadBenchmark.plot_thread_benchmark_for_fold2000_cmp_greedy()
         ThreadBenchmark.plot_thread_benchmark_for_fold2000_zocrs_de()
+
+    @staticmethod
+    def search_for_execution_data(copy: bool = True):
+        not_found_list = []
+        for execution_map in ThreadBenchmark.EXECUTION_METADATA:
+            for instance, exec_time_arrays in execution_map.get(ThreadBenchmark.EXEC_DATA).items():
+                for thread_count, exec_time_array in zip(ThreadBenchmark.THREAD_COUNT, exec_time_arrays):
+                    for loop_idx, exec_time in enumerate(exec_time_array):
+                        try:
+                            print("Looking for {} ({}, {}, {}, {}, {})".format(exec_time,
+                                                                               instance.name,
+                                                                               thread_count,
+                                                                               execution_map.get(ThreadBenchmark.MODEL),
+                                                                               execution_map.get(ThreadBenchmark.DATA_SET),
+                                                                               execution_map.get(ThreadBenchmark.COMPUTE_METHOD)))
+
+                            copy_to_dirname = '{}/{}_{}_{}_{}_{}_{}/{}'.format(DataPath.GIT_DATA_DIR,
+                                                                               instance.name.upper().replace(' ', '_'),
+                                                                               'thread_benchmark',
+                                                                               thread_count,
+                                                                               execution_map.get(ThreadBenchmark.MODEL),
+                                                                               execution_map.get(ThreadBenchmark.DATA_SET),
+                                                                               execution_map.get(ThreadBenchmark.COMPUTE_METHOD),
+                                                                               loop_idx + 1)
+
+                            if PersistenceHelpers.path_exists(path=copy_to_dirname):
+                                print('{} already exists. Skipping'.format(copy_to_dirname))
+                                continue
+
+                            filename = PersistenceHelpers.grep_log_for_data_in_folder(
+                                folder=DataPath.RAW_DATA_DIR, exec_time=exec_time)
+                            dirname = PersistenceHelpers.get_dir_name(filename=filename, is_spit_exec=False)
+
+                            if copy:
+                                print("Copying {} to {}".format(dirname, copy_to_dirname))
+                                PersistenceHelpers.create_directory(path_to_dir=copy_to_dirname)
+                                distutils.dir_util.copy_tree(src=dirname, dst=copy_to_dirname, update=True)
+
+                        except RuntimeError as e:
+                            print("Exception caught: {}".format(e))
+                            not_found_list.append((
+                                instance.name,
+                                thread_count,
+                                exec_time,
+                                execution_map.get(ThreadBenchmark.MODEL),
+                                execution_map.get(ThreadBenchmark.DATA_SET),
+                                execution_map.get(ThreadBenchmark.COMPUTE_METHOD)
+                            ))
+
+        print('Summary for thread benchmark')
+        print('----------------------------')
+        print('+ Could not find result file for {}', not_found_list)

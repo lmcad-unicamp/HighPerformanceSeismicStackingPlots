@@ -25,6 +25,7 @@ class PlotHelpers:
     KERNEL_EXEC_TIME_STD_DEV_KEY: str = 'kernel_exec_time_std_dev_key'
     RELATIVE_PERF_KEY: str = 'relative_perf_key'
     RELATIVE_PERF_STD_DEV_KEY: str = 'relative_perf_std_dev_key'
+    EFFICIENCY_PERF_KEY: str = 'eff_perf_key'
 
     ROOT_IMAGE_DIR: str = 'images'
 
@@ -84,6 +85,52 @@ class PlotHelpers:
                         ha='center',
                         va='bottom',
                         color="red")
+
+    @staticmethod
+    def plot_interpolations_per_sec_and_impl(implementations: List[Implementation],
+                                             data_to_plot: Dict[str, List[float]],
+                                             filename_to_save: str = None,
+                                             annotate: bool = False,
+                                             show: bool = False):
+        plt.close()
+
+        fig, int_per_sec_ax = plt.subplots(figsize=GraphSize.MIDDLE)
+
+        PlotHelpers.disable_top_border(int_per_sec_ax)
+
+        tags = [impl.tag for impl in implementations]
+
+        int_per_sec = data_to_plot[PlotHelpers.INTERPOLATION_PER_SEC_KEY]
+        int_per_sec_std_dev = data_to_plot[PlotHelpers.INTERPOLATION_PER_SEC_STD_DEV_KEY]
+
+        rects = int_per_sec_ax.bar(tags,
+                                   int_per_sec,
+                                   yerr=int_per_sec_std_dev,
+                                   capsize=5,
+                                   label=Legends.AVG_INTERPOLATIONS_PER_SEC[LOCALE],
+                                   color='lightgray')
+        int_per_sec_ax.set_ylabel(Legends.INTERPOLATIONS_PER_SEC[LOCALE])
+
+        if annotate:
+            for rect in rects:
+                height = rect.get_height()
+                int_per_sec_ax.annotate(PlotHelpers.print_int_per_sec(height, int_per_sec_ax),
+                                        xy=(rect.get_x() + rect.get_width() / 2, height),
+                                        xytext=(0, 12.5),
+                                        textcoords="offset points",
+                                        ha='center',
+                                        va='bottom')
+
+        PlotHelpers.round_axes_up(int_per_sec_ax)
+
+        fig.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15), columnspacing=0, ncol=4,
+                   bbox_transform=int_per_sec_ax.transAxes)
+        plt.grid(linestyle=':')
+
+        if show:
+            plt.show()
+
+        PlotHelpers.save_plot(fig, filename_to_save)
 
     @staticmethod
     def plot_interpolations_per_sec_with_relative_performance(implementations: List[Implementation],
@@ -161,11 +208,11 @@ class PlotHelpers:
                                                    show: bool = False):
         plt.close()
 
-        fig, int_per_sec_ax = plt.subplots(figsize=(7, 5))
+        fig, int_per_sec_ax = plt.subplots(figsize=GraphSize.MIDDLE)
         trace_use_ax = int_per_sec_ax.twinx()
 
-        # PlotHelpers.disable_top_border(int_per_sec_ax)
-        # PlotHelpers.disable_top_border(trace_use_ax)
+        PlotHelpers.disable_top_border(int_per_sec_ax)
+        PlotHelpers.disable_top_border(trace_use_ax)
 
         int_per_sec_ax.bar(treatments, int_per_sec,
                            label=Legends.AVG_INTERPOLATIONS_PER_SEC[LOCALE],
@@ -637,17 +684,21 @@ class PlotHelpers:
         plt.close()
 
         fig, relative_perf_ax = plt.subplots(figsize=GraphSize.MIDDLE)
+        eff_ax = relative_perf_ax.twinx()
 
         PlotHelpers.disable_top_border(relative_perf_ax)
+        PlotHelpers.disable_top_border(eff_ax)
 
         node_counts: List[str] = []
         relative_perfs: List[float] = []
         relative_perf_std_devs: List[float] = []
+        effs: List[float] = []
 
         for instance, values in data_to_plot.items():
             node_counts.append('{}'.format(instance.node_count))
             relative_perfs.append(values.get(PlotHelpers.RELATIVE_PERF_KEY))
             relative_perf_std_devs.append(values.get(PlotHelpers.RELATIVE_PERF_STD_DEV_KEY))
+            effs.append(values.get(PlotHelpers.EFFICIENCY_PERF_KEY))
 
         relative_perf_ax.errorbar(x=node_counts,
                                   y=relative_perfs,
@@ -658,6 +709,14 @@ class PlotHelpers:
                                   color='black')
         relative_perf_ax.set_ylabel(Legends.RELATIVE_PERFORMANCE[LOCALE])
         relative_perf_ax.set_xlabel(Legends.NODE_COUNT[LOCALE])
+
+        eff_ax.plot(node_counts,
+                    effs,
+                    label=Legends.EFFICIENCY[LOCALE],
+                    marker='o',
+                    color='blue')
+        eff_ax.set_ylabel(Legends.EFFICIENCY_RATE[LOCALE])
+        eff_ax.set_ylim(bottom=0)
 
         if annotate:
             for xy in zip(node_counts, relative_perfs):
@@ -672,7 +731,11 @@ class PlotHelpers:
 
         PlotHelpers.round_axes_up(relative_perf_ax)
 
-        relative_perf_ax.legend(loc='upper left')
+        fig.legend(loc='upper center',
+                   bbox_to_anchor=(0.5, 1.15),
+                   ncol=5,
+                   columnspacing=1,
+                   bbox_transform=relative_perf_ax.transAxes)
 
         plt.grid(linestyle=':')
 

@@ -1,6 +1,12 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from statistics import mean, stdev, StatisticsError
-from typing import List
+from typing import List, Dict
+
+
+class DataPath:
+    RAW_DATA_DIR='/Users/ciotto/Projects/Master-plot/data'
+    HEURISTIC_RAW_DATA_DIR='/Users/ciotto/Projects/Master-plot/data-heuristic'
+    GIT_DATA_DIR= '/Users/ciotto/Projects/HighPerformanceSeismicStackingClapExperiments/'
 
 
 class AwsInstance:
@@ -34,13 +40,19 @@ class ExecutionData:
                  test_id: str,
                  int_per_second: list,
                  total_execution_time: list = None,
+                 link_to_data: str = None,
                  kernel_execution_time: list = None,
                  instance_cost_per_hour: float = None):
         self.__test_id = test_id
         self.__int_per_second = int_per_second
         self.__total_execution_time = total_execution_time
+        self.__link_to_data = link_to_data
         self.__kernel_execution_time = kernel_execution_time
         self.__instance_cost_per_hour = instance_cost_per_hour
+
+    @property
+    def int_per_second(self) -> List[float]:
+        return self.__int_per_second
 
     @property
     def total_execution_time(self) -> List[float]:
@@ -256,7 +268,7 @@ class Implementation:
 class Implementations:
     CARDOSO_HERCULES = Implementation(impl_id='cardoso', tag='Cardoso, Hércules', platform=Implementation.CUDA)
     GIMENES_ET_AL = Implementation(impl_id='gimenes', tag='Gimenes et al.', platform=Implementation.CUDA)
-    SOLUTION_V11 = Implementation(impl_id='v11', tag='v1.1', platform=Implementation.CUDA)
+    SOLUTION_V10 = Implementation(impl_id='v10', tag='This work - No optimizations', platform=Implementation.CUDA)
     SOLUTION_V20 = Implementation(impl_id='v20', tag='This work', platform=Implementation.CUDA)
     SOLUTION_V20_OPENCL = Implementation(impl_id='v20_opencl', tag='v2.0_opencl', platform=Implementation.OPENCL)
 
@@ -273,14 +285,33 @@ class Execution:
 
     @staticmethod
     @abstractmethod
+    def executions(impl: Implementation) -> Dict[AwsInstance, ExecutionData]: pass
+
+    @staticmethod
+    @abstractmethod
     def execution(instance: AwsInstance, impl: Implementation) -> ExecutionData: pass
 
     @staticmethod
     @abstractmethod
     def model() -> str: pass
 
+    @staticmethod
+    def is_single_node_exec() -> bool:
+        return True
+
+
+class SpitsExecution(Execution, ABC):
+
+    @staticmethod
+    def is_single_node_exec() -> bool:
+        return False
+
 
 class DummyExecution(Execution):
+
+    @staticmethod
+    def executions(impl: Implementation) -> Dict[AwsInstance, ExecutionData]:
+        return {}
 
     @staticmethod
     def execution(instance: AwsInstance, impl: Implementation) -> ExecutionData:
@@ -301,6 +332,13 @@ class DummyExecution(Execution):
 
 class Instances:
     GTX_TITAN = AwsInstance(name='GTX Titan')
+
+    G4AD_X_LARGE = AwsInstance(name='g4ad.xlarge', cost_per_hour=0.37853, gpu_count=1)
+    G4AD_X_LARGE_2 = AwsInstance(name='g4ad.xlarge', cost_per_hour=0.37853, node_count=2)
+    G4AD_X_LARGE_4 = AwsInstance(name='g4ad.xlarge', cost_per_hour=0.37853, node_count=4)
+    G4AD_X_LARGE_8 = AwsInstance(name='g4ad.xlarge', cost_per_hour=0.37853, node_count=8)
+    G4AD_X_LARGE_16 = AwsInstance(name='g4ad.xlarge', cost_per_hour=0.37853, node_count=16)
+    G4AD_X_LARGE_32 = AwsInstance(name='g4ad.xlarge', cost_per_hour=0.37853, node_count=32)
 
     G4DN_X_LARGE = AwsInstance(name='g4dn.xlarge', cost_per_hour=0.526, gpu_count=1)
     G4DN_12X_LARGE = AwsInstance(name='g4dn.12xlarge', cost_per_hour=3.912, gpu_count=4)
@@ -325,3 +363,22 @@ class Instances:
 
     P3_2X_LARGE = AwsInstance(name='p3.2xlarge', cost_per_hour=3.06, gpu_count=1)
     P3_8X_LARGE = AwsInstance(name='p3.8xlarge', cost_per_hour=12.24, gpu_count=4)
+
+
+class DataSets:
+    FOLD2000 = 'fold2000'
+    SIMPLE_SYNTHETIC = 'simple_synthetic'
+
+
+class Models:
+    CMP = 'cmp'
+    ZOCRS = 'zocrs'
+    OCT = 'oct'
+
+
+class ComputeMethods:
+    DE = 'de'
+    GREEDY = 'greedy'
+
+    DE_SPITS = 'de_spits'
+    GREEDY_SPITS = 'greedy_spits'

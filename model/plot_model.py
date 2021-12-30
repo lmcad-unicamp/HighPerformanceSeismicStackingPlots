@@ -34,6 +34,16 @@ class Legends:
         LOCALE_EN_US: "Average relative performance"
     }
 
+    EFFICIENCY = {
+        LOCALE_PT_BR: "Eficiência",
+        LOCALE_EN_US: "Efficiency"
+    }
+
+    EFFICIENCY_RATE = {
+        LOCALE_PT_BR: '\%',
+        LOCALE_EN_US: '\%'
+    }
+
     TRACE_USE = {
         LOCALE_PT_BR: '\%',
         LOCALE_EN_US: '\%'

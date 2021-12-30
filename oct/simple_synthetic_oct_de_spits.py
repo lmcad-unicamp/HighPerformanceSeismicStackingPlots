@@ -1,87 +1,99 @@
 from typing import Dict, List
 
 from helpers.graph_helpers import GraphHelpers
-from model.execution_data import ExecutionData, AwsInstance, Execution, Implementation, Instances, Implementations
+from helpers.persistence_helpers import PersistenceHelpers
+from model.execution_data import ExecutionData, AwsInstance, Implementation, Instances, Implementations, \
+    DataPath, SpitsExecution, ComputeMethods, DataSets, Models
 
 
-class SimpleSyntheticOffsetContinuationTrajectoryDifferentialEvolutionSpits(Execution):
+class SimpleSyntheticOffsetContinuationTrajectoryDifferentialEvolutionSpits(SpitsExecution):
     EXECUTION_DATA: Dict[Implementation, Dict[AwsInstance, ExecutionData]] = {
         Implementations.SOLUTION_V20: {
-            Instances.G4DN_X_LARGE: ExecutionData(
+            Instances.G4DN_X_LARGE: ExecutionData( # OK
                 test_id='e81d6e1',
-                int_per_second=[2.54E+10],
+                int_per_second=[2.53947e+10],
                 total_execution_time=[934.85],
-                kernel_execution_time=None,
-                instance_cost_per_hour=Instances.G4DN_X_LARGE.cost_per_hour
+                instance_cost_per_hour=Instances.G4DN_X_LARGE.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_1_v20_cuda_simple_synthetic_oct_de_spits'
             ),
-            Instances.G4DN_X_LARGE_2: ExecutionData(
+            Instances.G4DN_X_LARGE_2: ExecutionData( # OK
                 test_id='e81d6e1',
                 int_per_second=[2.55E+10],
                 total_execution_time=[479.365],
-                kernel_execution_time=None,
-                instance_cost_per_hour=Instances.G4DN_X_LARGE_2.cost_per_hour
+                instance_cost_per_hour=Instances.G4DN_X_LARGE_2.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_2_v20_cuda_simple_synthetic_oct_de_spits'
             ),
             Instances.G4DN_X_LARGE_4: ExecutionData(
                 test_id='e81d6e1',
                 int_per_second=[2.54E+10],
                 total_execution_time=[266.878],
                 kernel_execution_time=None,
-                instance_cost_per_hour=Instances.G4DN_X_LARGE_4.cost_per_hour
+                instance_cost_per_hour=Instances.G4DN_X_LARGE_4.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_4_v20_cuda_simple_synthetic_oct_de_spits'
             ),
             Instances.G4DN_X_LARGE_8: ExecutionData(
                 test_id='e81d6e1',
                 int_per_second=[2.55E+10],
                 total_execution_time=[158.607],
                 kernel_execution_time=None,
-                instance_cost_per_hour=Instances.G4DN_X_LARGE_8.cost_per_hour
+                instance_cost_per_hour=Instances.G4DN_X_LARGE_8.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/G4DN.XLARGE_8_v20_cuda_simple_synthetic_oct_de_spits'
             ),
             Instances.P2_X_LARGE: ExecutionData(
                 test_id='e81d6e1',
-                int_per_second=[1.10E+10],
+                int_per_second=[1.09728e+10],
                 total_execution_time=[935.235],
                 kernel_execution_time=None,
-                instance_cost_per_hour=Instances.P2_X_LARGE.cost_per_hour
+                instance_cost_per_hour=Instances.P2_X_LARGE.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_1_v20_cuda_simple_synthetic_oct_de_spits'
             ),
             Instances.P2_X_LARGE_2: ExecutionData(
                 test_id='e81d6e1',
-                int_per_second=[1.09E+10],
+                int_per_second=[1.09242e+10],
                 total_execution_time=[486.114],
                 kernel_execution_time=None,
-                instance_cost_per_hour=Instances.P2_X_LARGE_2.cost_per_hour
+                instance_cost_per_hour=Instances.P2_X_LARGE_2.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_2_v20_cuda_simple_synthetic_oct_de_spits'
             ),
             Instances.P2_X_LARGE_4: ExecutionData(
                 test_id='e81d6e1',
-                int_per_second=[1.10E+10],
+                int_per_second=[1.10199e+10],
                 total_execution_time=[263.835],
                 kernel_execution_time=None,
-                instance_cost_per_hour=Instances.P2_X_LARGE_4.cost_per_hour
+                instance_cost_per_hour=Instances.P2_X_LARGE_4.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_4_v20_cuda_simple_synthetic_oct_de_spits'
             ),
             Instances.P2_X_LARGE_8: ExecutionData(
                 test_id='e81d6e1',
-                int_per_second=[1.12E+10],
+                int_per_second=[1.11812e+10],
                 total_execution_time=[163.388],
                 kernel_execution_time=None,
-                instance_cost_per_hour=Instances.P2_X_LARGE_8.cost_per_hour
+                instance_cost_per_hour=Instances.P2_X_LARGE_8.cost_per_hour,
+                link_to_data='https://github.com/lmcad-unicamp/HighPerformanceSeismicStackingClapExperiment/tree/master/P2.XLARGE_8_v20_cuda_simple_synthetic_oct_de_spits'
             ),
         }
     }
 
     @staticmethod
     def compute_method() -> str:
-        return 'de_spits'
+        return ComputeMethods.DE_SPITS
 
     @staticmethod
     def data_name() -> str:
-        return 'simple_synthetic'
+        return DataSets.SIMPLE_SYNTHETIC
 
     @staticmethod
     def execution(instance: AwsInstance, impl: Implementation) -> ExecutionData:
-        __impl = SimpleSyntheticOffsetContinuationTrajectoryDifferentialEvolutionSpits.EXECUTION_DATA[impl]
+        __impl = SimpleSyntheticOffsetContinuationTrajectoryDifferentialEvolutionSpits.executions(impl)
         return __impl.get(instance)
 
     @staticmethod
+    def executions(impl: Implementation) -> Dict[AwsInstance, ExecutionData]:
+        return SimpleSyntheticOffsetContinuationTrajectoryDifferentialEvolutionSpits.EXECUTION_DATA[impl]
+
+    @staticmethod
     def model() -> str:
-        return 'oct'
+        return Models.OCT
 
     @staticmethod
     def plot_cost_and_exec_time():
@@ -108,3 +120,11 @@ class SimpleSyntheticOffsetContinuationTrajectoryDifferentialEvolutionSpits(Exec
     @staticmethod
     def plot_all():
         SimpleSyntheticOffsetContinuationTrajectoryDifferentialEvolutionSpits.plot_cost_and_exec_time()
+
+    @staticmethod
+    def search_for_data_and_persist():
+        PersistenceHelpers.search_for_execution_data(
+            search_folder=DataPath.RAW_DATA_DIR,
+            result_folder=DataPath.GIT_DATA_DIR,
+            exec_class=SimpleSyntheticOffsetContinuationTrajectoryDifferentialEvolutionSpits,
+            impl=Implementations.SOLUTION_V20)
